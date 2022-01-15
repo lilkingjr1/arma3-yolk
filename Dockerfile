@@ -19,15 +19,14 @@ RUN         dpkg --add-architecture i386 \
                 && apt upgrade -y
 
 ## Install dependencies
-RUN         apt install -y curl ca-certificates libssl-dev lib32gcc-s1 libsdl2-2.0-0 libsdl2-2.0-0:i386 libtbb2 libtbb2:i386
+RUN         apt install -y curl locales ca-certificates libssl-dev lib32gcc-s1 libsdl2-2.0-0 libsdl2-2.0-0:i386 libtbb2 libtbb2:i386
 
 ## Configure locale
 RUN         update-locale lang=en_US.UTF-8 \
                 && dpkg-reconfigure --frontend noninteractive locales
 
-
+## Setup working directory
 WORKDIR     /home/container
 
 COPY        ./entrypoint.sh /entrypoint.sh
 CMD         [ "/bin/bash", "/entrypoint.sh" ]
-
