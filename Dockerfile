@@ -15,7 +15,7 @@ ENV         USER=container HOME=/home/container
 
 ## Update base packages
 RUN         dpkg --add-architecture i386 \
-                apt update \
+                && apt update \
                 && apt upgrade -y
 
 ## Install dependencies
