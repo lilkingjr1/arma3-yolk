@@ -14,16 +14,16 @@ RUN         ln -s /home/container/ /nonexistent
 ENV         USER=container HOME=/home/container
 
 ## Update base packages
-RUN         apt update \
-            && apt upgrade -y
+RUN         dpkg --add-architecture i386 \
+                apt update \
+                && apt upgrade -y
 
 ## Install dependencies
-RUN         dpkg --add-architecture i386 \
-            apt install -y curl lib32gcc-s1 ca-certificates libsdl2-2.0-0
+RUN         apt install -y curl ca-certificates libssl-dev lib32gcc-s1 libsdl2-2.0-0 libsdl2-2.0-0:i386 libtbb2 libtbb2:i386
 
 ## Configure locale
 RUN         update-locale lang=en_US.UTF-8 \
-            && dpkg-reconfigure --frontend noninteractive locales
+                && dpkg-reconfigure --frontend noninteractive locales
 
 
 WORKDIR     /home/container
