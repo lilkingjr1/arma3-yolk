@@ -1,4 +1,4 @@
-FROM        debian:lts-bullseye-slim
+FROM        debian:bullseye-slim
 
 LABEL       author="David Wolfe" maintainer="rehlmgaming@gmail.com"
 
