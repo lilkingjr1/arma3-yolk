@@ -26,7 +26,7 @@ NC='\033[0m' # No Color
 # validateServer, extraFlags, updateAttempt, modifiedStartup, allMods, CLIENT_MODS
 
 ## === DEFINE FUNCTIONS ===
-#
+
 # Runs SteamCMD with specified variables and performs error handling.
 function RunSteamCMD { #[Input: int server=0 mod=1; int id]
     # Clear previous SteamCMD log
@@ -149,7 +149,7 @@ function RemoveDuplicates { #[Input: str - Output: printf of new str]
     fi
 }
 
-# === ENTRYPOINT START ===
+## === ENTRYPOINT START ===
 cd /home/container
 sleep 1
 
@@ -162,13 +162,15 @@ if [[ -z ${VALIDATE_SERVER} ]]; then # VALIDATE_SERVER was not in the previous v
     exit 1
 fi
 
-# Collect and parse all specified mods
-if [[ -n ${MODIFICATIONS} ]] && [[ ${MODIFICATIONS} != *\; ]]; then # Add manually specified mods to the client-side mods list, while checking for trailing semicolon
+## Collect and parse all specified mods
+# Add manually specified mods to the client-side mods list, while checking for trailing semicolon
+if [[ -n ${MODIFICATIONS} ]] && [[ ${MODIFICATIONS} != *\; ]]; then
     CLIENT_MODS="${MODIFICATIONS};"
 else
     CLIENT_MODS=${MODIFICATIONS}
 fi
-if [[ -f ${MOD_FILE} ]] && [[ -n "$(cat ${MOD_FILE} | grep 'Created by Arma 3 Launcher')" ]]; then # If the mod list file exists and is valid, parse and add mods to the client-side mods list
+# If the mod list file exists and is valid, parse and add mods to the client-side mods list
+if [[ -f ${MOD_FILE} ]] && [[ -n "$(cat ${MOD_FILE} | grep 'Created by Arma 3 Launcher')" ]]; then
     CLIENT_MODS+=$(cat ${MOD_FILE} | grep 'id=' | cut -d'=' -f3 | cut -d'"' -f1 | xargs printf '@%s;')
 elif [[ -n "${MOD_FILE}" ]]; then # If MOD_FILE is not null, warn user file is missing or invalid
     echo -e "\n${YELLOW}[STARTUP_WARN]: Arma 3 Modlist file \"${CYAN}${MOD_FILE}${YELLOW}\" could not be found, or is invalid!${NC}"
@@ -178,7 +180,8 @@ elif [[ -n "${MOD_FILE}" ]]; then # If MOD_FILE is not null, warn user file is m
         echo -e "\t${CYAN}Reverting to the manual mod list...${NC}"
     fi
 fi
-if [[ -n ${SERVERMODS} ]] && [[ ${SERVERMODS} != *\; ]]; then # Add server mods to the master mods list, while checking for trailing semicolon
+# Add server mods to the master mods list, while checking for trailing semicolon
+if [[ -n ${SERVERMODS} ]] && [[ ${SERVERMODS} != *\; ]]; then
     allMods="${SERVERMODS};"
 else
     allMods=${SERVERMODS}
