@@ -30,7 +30,7 @@ RUN         update-locale lang=en_US.UTF-8 \
                 && dpkg-reconfigure --frontend noninteractive locales
 
 ## Setup user and working directory
-RUN         useradd -u 988 -m -d /home/container -s /bin/bash container
+RUN         useradd -u 997 -m -d /home/container -s /bin/bash container
 RUN         ln -s /home/container/ /nonexistent
 USER        container
 ENV         USER=container HOME=/home/container
