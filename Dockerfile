@@ -1,37 +1,44 @@
-FROM        debian:bullseye-slim
+FROM        --platform=$BUILDPLATFORM debian:stable-slim
 
 LABEL       author="David Wolfe" maintainer="rehlmgaming@gmail.com"
 
-LABEL       org.opencontainers.image.source="https://github.com/pterodactyl/yolks"
+LABEL       org.opencontainers.image.source="https://github.com/parkervcp/yolks"
 LABEL       org.opencontainers.image.licenses=MIT
 
-ENV         DEBIAN_FRONTEND noninteractive
-
 ## Update base packages and install dependencies
+ENV         DEBIAN_FRONTEND=noninteractive
 RUN         dpkg --add-architecture i386 \
-                && apt update \
-                && apt upgrade -y \
-                && apt install -y \
-                    curl \
-                    locales \
-                    ca-certificates \
-                    libssl-dev \
-                    lib32gcc-s1 \
-                    libsdl2-2.0-0 \
-                    libsdl2-2.0-0:i386 \
-                    libstdc++6 \
-                    libstdc++6:i386 \
-                    lib32stdc++6 \
-                    libtbb2 \
-                    libtbb2:i386
+            && apt-get update \
+            && apt-get upgrade -y \
+            && apt-get install -y \
+                curl \
+                tzdata \
+                locales \
+                iproute2 \
+                ca-certificates \
+                libssl-dev \
+                lib32gcc-s1 \
+                libsdl2-2.0-0 \
+                libsdl2-2.0-0:i386 \
+                libstdc++6 \
+                libstdc++6:i386 \
+                lib32stdc++6 \
+                libnss-wrapper \
+                libtbb2 \
+                libtbb2:i386
 
 ## Configure locale
 RUN         update-locale lang=en_US.UTF-8 \
-                && dpkg-reconfigure --frontend noninteractive locales
+            && dpkg-reconfigure --frontend noninteractive locales
+
+## Prepare NSS Wrapper for the entrypoint as a workaround for Arma 3 requiring a valid UID
+ENV         NSS_WRAPPER_PASSWD=/tmp/passwd NSS_WRAPPER_GROUP=/tmp/group
+RUN         touch ${NSS_WRAPPER_PASSWD} ${NSS_WRAPPER_GROUP} \
+            && chgrp 0 ${NSS_WRAPPER_PASSWD} ${NSS_WRAPPER_GROUP} \
+            && chmod g+rw ${NSS_WRAPPER_PASSWD} ${NSS_WRAPPER_GROUP}
 
 ## Setup user and working directory
-RUN         useradd -u 988 -m -d /home/container -s /bin/bash container
-RUN         ln -s /home/container/ /nonexistent
+RUN         useradd -m -d /home/container -s /bin/bash container
 USER        container
 ENV         USER=container HOME=/home/container
 WORKDIR     /home/container
