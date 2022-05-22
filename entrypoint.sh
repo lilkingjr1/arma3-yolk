@@ -170,11 +170,6 @@ function RemoveDuplicates { #[Input: str - Output: printf of new str]
 # Wait for the container to fully initialize
 sleep 1
 
-# Default the TZ environment variable to UTC.
-echo -e "TIMEZONE: ${TZ}"
-TZ=${TZ:-America/Los_Angeles}
-export TZ
-
 # Set environment variable that holds the Internal Docker IP
 INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}')
 export INTERNAL_IP
@@ -363,12 +358,11 @@ export USER_ID=$(id -u)
 export GROUP_ID=$(id -g)
 envsubst < /passwd.template > ${NSS_WRAPPER_PASSWD}
 
-# if [[ ${SERVER_BINARY} == *"x64"* ]]; then # Check which libnss_wrapper architecture to run, based off the server binary name
-    # export LD_PRELOAD=/libnss_wrapper_x64.so
-# else
-    # export LD_PRELOAD=/libnss_wrapper.so
-# fi
-export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libnss_wrapper.so
+if [[ ${SERVER_BINARY} == *"x64"* ]]; then # Check which libnss-wrapper architecture to run, based off the server binary name
+    export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libnss_wrapper.so
+else
+    export LD_PRELOAD=/usr/lib/i386-linux-gnu/libnss_wrapper.so
+fi
 
 # Replace Startup Variables
 modifiedStartup=`eval echo $(echo ${STARTUP} | sed -e 's/{{/${/g' -e 's/}}/}/g')`
