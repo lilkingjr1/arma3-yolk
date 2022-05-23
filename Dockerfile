@@ -1,4 +1,4 @@
-FROM        --platform=$BUILDPLATFORM debian:stable-slim
+FROM        --platform=$TARGETOS/$TARGETARCH debian:stable-slim
 
 LABEL       author="David Wolfe (Red-Thirten)" maintainer="rehlmgaming@gmail.com"
 
