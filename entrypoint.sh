@@ -6,27 +6,6 @@
 ## Date: 2022/05/22
 ## License: MIT License
 
-## === CONSTANTS ===
-STEAMCMD_DIR="./steamcmd"                       # SteamCMD's directory containing steamcmd.sh
-STEAMCMD_LOG="${STEAMCMD_DIR}/steamcmd.log"     # Log file for SteamCMD
-GAME_ID=107410                                  # SteamCMD ID for the Arma 3 GAME (not server). Only used for Workshop mod downloads.
-EGG_URL='https://github.com/parkervcp/eggs/tree/master/game_eggs/steamcmd_servers/arma/arma3'   # URL for Pterodactyl Egg & Info (only used as info to legacy users)
-
-# Color Codes
-CYAN='\033[0;36m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
-
-## === ENVIRONMENT VARS ===
-# STARTUP, STARTUP_PARAMS, STEAM_USER, STEAM_PASS, SERVER_BINARY, MOD_FILE, MODIFICATIONS, SERVERMODS, OPTIONALMODS, UPDATE_SERVER, CLEAR_CACHE, VALIDATE_SERVER, MODS_LOWERCASE, STEAMCMD_EXTRA_FLAGS, CDLC, STEAMCMD_APPID, HC_NUM, SERVER_PASSWORD, HC_HIDE, STEAMCMD_ATTEMPTS, BASIC_URL, DISABLE_MOD_UPDATES
-
-## === GLOBAL VARS ===
-# validateServer, extraFlags, updateAttempt, modifiedStartup, allMods, CLIENT_MODS
-
-
-
 # === ENTRYPOINT START ===
 
 # Wait for the container to fully initialize
