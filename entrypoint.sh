@@ -1,5 +1,26 @@
 #!/bin/bash
 
+#################################
+# Wait for the container to fully initialize
+sleep 1
+
+# Default the TZ environment variable to UTC.
+TZ=${TZ:-UTC}
+export TZ
+
+# Set environment variable that holds the Internal Docker IP
+INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}')
+export INTERNAL_IP
+
+# Switch to the container's working directory
+cd /home/container || exit 1
+
+./steamcmd/steamcmd.sh +force_install_dir /home/container +login ${STEAM_USER} ${STEAM_PASS} +app_update ${STEAMCMD_APPID} $( [[ -z ${VALIDATE_SERVER} ]] || printf %s "validate" ) +quit
+
+echo -e "\nUPDATE CHECK COMPLETE!\n"
+exit 0
+#################################
+
 ## File: Pterodactyl Arma 3 Image - entrypoint.sh
 ## Author: David Wolfe (Red-Thirten)
 ## Contributors: Aussie Server Hosts (https://aussieserverhosts.com/), Stephen White (SilK)
@@ -46,7 +67,7 @@ function RunSteamCMD { #[Input: int server=0 mod=1 optional_mod=2; int id]
 
         # Check if updating server or mod
         if [[ $1 == 0 ]]; then # Server
-            ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir /home/container +login ${STEAM_USER} ${STEAM_PASS} +app_update $2 $extraFlags $validateServer +quit
+            ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir /home/container "+login \"${STEAM_USER}\" \"${STEAM_PASS}\"" +app_update $2 $extraFlags $validateServer +quit | tee -a "${STEAMCMD_LOG}"
         else # Mod
             ${STEAMCMD_DIR}/steamcmd.sh "+login \"${STEAM_USER}\" \"${STEAM_PASS}\"" +workshop_download_item $GAME_ID $2 +quit | tee -a "${STEAMCMD_LOG}"
         fi
