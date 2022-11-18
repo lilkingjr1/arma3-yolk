@@ -25,145 +25,7 @@ NC='\033[0m' # No Color
 ## === GLOBAL VARS ===
 # validateServer, extraFlags, updateAttempt, modifiedStartup, allMods, CLIENT_MODS
 
-## === DEFINE FUNCTIONS ===
-#
-# Runs SteamCMD with specified variables and performs error handling.
-function RunSteamCMD { #[Input: int server=0 mod=1 optional_mod=2; int id]
-    # Clear previous SteamCMD log
-    if [[ -f "${STEAMCMD_LOG}" ]]; then
-        rm -f "${STEAMCMD_LOG:?}"
-    fi
 
-    updateAttempt=0
-    while (( $updateAttempt < $STEAMCMD_ATTEMPTS )); do # Loop for specified number of attempts
-        # Increment attempt counter
-        updateAttempt=$((updateAttempt+1))
-
-        if (( $updateAttempt > 1 )); then # Notify if not first attempt
-            echo -e "\t${YELLOW}Re-Attempting download/update in 3 seconds...${NC} (Attempt ${CYAN}${updateAttempt}${NC} of ${CYAN}${STEAMCMD_ATTEMPTS}${NC})\n"
-            sleep 3
-        fi
-
-        # Check if updating server or mod
-        if [[ $1 == 0 ]]; then # Server
-            ${STEAMCMD_DIR}/steamcmd.sh +force_install_dir /home/container "+login \"${STEAM_USER}\" \"${STEAM_PASS}\"" +app_update $2 $extraFlags $validateServer +quit | tee -a "${STEAMCMD_LOG}"
-        else # Mod
-            ${STEAMCMD_DIR}/steamcmd.sh "+login \"${STEAM_USER}\" \"${STEAM_PASS}\"" +workshop_download_item $GAME_ID $2 +quit | tee -a "${STEAMCMD_LOG}"
-        fi
-
-        # Error checking for SteamCMD
-        steamcmdExitCode=${PIPESTATUS[0]}
-        if [[ -n $(grep -i "error\|failed" "${STEAMCMD_LOG}" | grep -iv "setlocal\|SDL") ]]; then # Catch errors (ignore setlocale and SDL warnings)
-            # Soft errors
-            if [[ -n $(grep -i "Timeout downloading item" "${STEAMCMD_LOG}") ]]; then # Mod download timeout
-                echo -e "\n${YELLOW}[UPDATE]: ${NC}Timeout downloading Steam Workshop mod: \"${CYAN}${modName}${NC}\" (${CYAN}${2}${NC})"
-                echo -e "\t(This is expected for particularly large mods)"
-            elif [[ -n $(grep -i "0x402\|0x6\|0x602" "${STEAMCMD_LOG}") ]]; then # Connection issue with Steam
-                echo -e "\n${YELLOW}[UPDATE]: ${NC}Connection issue with Steam servers."
-                echo -e "\t(Steam servers may currently be down, or a connection cannot be made reliably)"
-            # Hard errors
-            elif [[ -n $(grep -i "Password check for AppId" "${STEAMCMD_LOG}") ]]; then # Incorrect beta branch password
-                echo -e "\n${RED}[UPDATE]: ${YELLOW}Incorrect password given for beta branch. ${CYAN}Skipping download...${NC}"
-                echo -e "\t(Check your \"[ADVANCED] EXTRA FLAGS FOR STEAMCMD\" startup parameter)"
-                break
-            # Fatal errors
-            elif [[ -n $(grep -i "Invalid Password\|two-factor\|No subscription" "${STEAMCMD_LOG}") ]]; then # Wrong username/password, Steam Guard is turned on, or host is using anonymous account
-                echo -e "\n${RED}[UPDATE]: Cannot login to Steam - Improperly configured account and/or credentials"
-                echo -e "\t${YELLOW}Please contact your administrator/host and give them the following message:${NC}"
-                echo -e "\t${CYAN}Your Egg, or your client's server, is not configured with valid Steam credentials.${NC}"
-                echo -e "\t${CYAN}Either the username/password is wrong, or Steam Guard is not properly configured\n\taccording to this egg's documentation/README.${NC}\n"
-                exit 1
-            elif [[ -n $(grep -i "Download item" "${STEAMCMD_LOG}") ]]; then # Steam account does not own base game for mod downloads, or unknown
-                echo -e "\n${RED}[UPDATE]: Cannot download mod - Download failed"
-                echo -e "\t${YELLOW}While unknown, this error is likely due to your host's Steam account not owning the base game.${NC}"
-                echo -e "\t${YELLOW}(Please contact your administrator/host if this issue persists)${NC}\n"
-                exit 1
-            elif [[ -n $(grep -i "0x202\|0x212" "${STEAMCMD_LOG}") ]]; then # Not enough disk space
-                echo -e "\n${RED}[UPDATE]: Unable to complete download - Not enough storage"
-                echo -e "\t${YELLOW}You have run out of your allotted disk space.${NC}"
-                echo -e "\t${YELLOW}Please contact your administrator/host for potential storage upgrades.${NC}\n"
-                exit 1
-            elif [[ -n $(grep -i "0x606" "${STEAMCMD_LOG}") ]]; then # Disk write failure
-                echo -e "\n${RED}[UPDATE]: Unable to complete download - Disk write failure"
-                echo -e "\t${YELLOW}This is normally caused by directory permissions issues,\n\tbut could be a more serious hardware issue.${NC}"
-                echo -e "\t${YELLOW}(Please contact your administrator/host if this issue persists)${NC}\n"
-                exit 1
-            else # Unknown caught error
-                echo -e "\n${RED}[UPDATE]: ${YELLOW}An unknown error has occurred with SteamCMD. ${CYAN}Skipping download...${NC}"
-                echo -e "\t(Please contact your administrator/host if this issue persists)"
-                break
-            fi
-        elif [[ $steamcmdExitCode != 0 ]]; then # Unknown fatal error
-            echo -e "\n${RED}[UPDATE]: SteamCMD has crashed for an unknown reason!${NC} (Exit code: ${CYAN}${steamcmdExitCode}${NC})"
-            echo -e "\t${YELLOW}(Please contact your administrator/host for support)${NC}\n"
-            exit $steamcmdExitCode
-        else # Success!
-            if [[ $1 == 0 ]]; then # Server
-                echo -e "\n${GREEN}[UPDATE]: Game server is up to date!${NC}"
-            else # Mod
-                # Move the downloaded mod to the root directory, and replace existing mod if needed
-                mkdir -p ./@$2
-                rm -rf ./@$2/*
-                mv -f ./Steam/steamapps/workshop/content/$GAME_ID/$2/* ./@$2
-                rm -d ./Steam/steamapps/workshop/content/$GAME_ID/$2
-                # Make the mods contents all lowercase
-                ModsLowercase @$2
-                # Move any .bikey's to the keys directory
-                echo -e "\tMoving any mod ${CYAN}.bikey${NC} files to the ${CYAN}~/keys/${NC} folder..."
-                if [[ $1 == 1 ]]; then
-                    find ./@$2 -name "*.bikey" -type f -exec cp {} ./keys \;
-                else
-                    # Give optional mod keys a custom name which can be checked later for deleting unconfigured mods
-                    for file in $(find ./@$2 -name "*.bikey" -type f); do
-                        filename=$(basename ${file})
-
-                        cp $file ./keys/optional_$2_${filename}
-
-                    done;
-
-                    echo -e "\tMod with ID $2 is an optional mod. Deleting original mod download folder..."
-                    rm -r ./@$2
-
-                    # Recreate a directory so time-based detection of auto updates works correctly
-                    mkdir ./@$2_optional
-                fi
-                echo -e "${GREEN}[UPDATE]: Mod download/update successful!${NC}"
-            fi
-            break
-        fi
-        if (( $updateAttempt == $STEAMCMD_ATTEMPTS )); then # Notify if failed last attempt
-            if [[ $1 == 0 ]]; then # Server
-                echo -e "\t${RED}Final attempt made! ${YELLOW}Unable to complete game server update. ${CYAN}Skipping...${NC}"
-                echo -e "\t(Please try again at a later time)"
-                sleep 3
-            else # Mod
-                echo -e "\t${RED}Final attempt made! ${YELLOW}Unable to complete mod download/update. ${CYAN}Skipping...${NC}"
-                echo -e "\t(You may try again later, or manually upload this mod to your server via SFTP)"
-                sleep 3
-            fi
-        fi
-    done
-}
-
-# Takes a directory (string) as input, and recursively makes all files & folders lowercase.
-function ModsLowercase {
-    echo -e "\n\tMaking mod ${CYAN}$1${NC} files/folders lowercase..."
-    for SRC in `find ./$1 -depth`
-    do
-        DST=`dirname "${SRC}"`/`basename "${SRC}" | tr '[A-Z]' '[a-z]'`
-        if [ "${SRC}" != "${DST}" ]
-        then
-            [ ! -e "${DST}" ] && mv -T "${SRC}" "${DST}"
-        fi
-    done
-}
-
-# Removes duplicate items from a semicolon delimited string
-function RemoveDuplicates { #[Input: str - Output: printf of new str]
-    if [[ -n $1 ]]; then # If nothing to compare, skip to prevent extra semicolon being returned
-        echo $1 | sed -e 's/;/\n/g' | sort -u | xargs printf '%s;'
-    fi
-}
 
 # === ENTRYPOINT START ===
 
@@ -181,6 +43,10 @@ export INTERNAL_IP
 # Switch to the container's working directory
 cd /home/container || exit 1
 
+./steamcmd/steamcmd.sh +force_install_dir /home/container +login ${STEAM_USER} ${STEAM_PASS} +app_update ${STEAMCMD_APPID} $( [[ -z ${VALIDATE_SERVER} ]] || printf %s "validate" ) +quit
+echo -e "\nUPDATE CHECK COMPLETE!\n"
+exit 0
+
 # Check for old eggs
 if [[ -z ${VALIDATE_SERVER} ]]; then # VALIDATE_SERVER was not in the previous version
     echo -e "\n${RED}[STARTUP_ERR]: Please contact your administrator/host for support, and give them the following message:${NC}\n"
@@ -189,10 +55,6 @@ if [[ -z ${VALIDATE_SERVER} ]]; then # VALIDATE_SERVER was not in the previous v
     echo -e "\t${CYAN}${EGG_URL}${NC}\n"
     exit 1
 fi
-
-./steamcmd/steamcmd.sh +force_install_dir /home/container +login ${STEAM_USER} ${STEAM_PASS} +app_update ${STEAMCMD_APPID} $( [[ -z ${VALIDATE_SERVER} ]] || printf %s "validate" ) +quit
-echo -e "\nUPDATE CHECK COMPLETE!\n"
-exit 0
 
 # Collect and parse all specified mods
 if [[ -n ${MODIFICATIONS} ]] && [[ ${MODIFICATIONS} != *\; ]]; then # Add manually specified mods to the client-side mods list, while checking for trailing semicolon
