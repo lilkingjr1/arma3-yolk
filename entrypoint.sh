@@ -1,26 +1,5 @@
 #!/bin/bash
 
-#################################
-# Wait for the container to fully initialize
-sleep 1
-
-# Default the TZ environment variable to UTC.
-TZ=${TZ:-UTC}
-export TZ
-
-# Set environment variable that holds the Internal Docker IP
-INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}')
-export INTERNAL_IP
-
-# Switch to the container's working directory
-cd /home/container || exit 1
-
-./steamcmd/steamcmd.sh +force_install_dir /home/container +login ${STEAM_USER} ${STEAM_PASS} +app_update ${STEAMCMD_APPID} $( [[ -z ${VALIDATE_SERVER} ]] || printf %s "validate" ) +quit
-
-echo -e "\nUPDATE CHECK COMPLETE!\n"
-exit 0
-#################################
-
 ## File: Pterodactyl Arma 3 Image - entrypoint.sh
 ## Author: David Wolfe (Red-Thirten)
 ## Contributors: Aussie Server Hosts (https://aussieserverhosts.com/), Stephen White (SilK)
@@ -50,6 +29,9 @@ NC='\033[0m' # No Color
 #
 # Runs SteamCMD with specified variables and performs error handling.
 function RunSteamCMD { #[Input: int server=0 mod=1 optional_mod=2; int id]
+    ./steamcmd/steamcmd.sh +force_install_dir /home/container +login ${STEAM_USER} ${STEAM_PASS} +app_update ${STEAMCMD_APPID} $( [[ -z ${VALIDATE_SERVER} ]] || printf %s "validate" ) +quit
+    echo -e "\nUPDATE CHECK COMPLETE!\n"
+    exit 0
     # Clear previous SteamCMD log
     if [[ -f "${STEAMCMD_LOG}" ]]; then
         rm -f "${STEAMCMD_LOG:?}"
@@ -190,6 +172,10 @@ function RemoveDuplicates { #[Input: str - Output: printf of new str]
 
 # Wait for the container to fully initialize
 sleep 1
+
+# Default the TZ environment variable to UTC.
+TZ=${TZ:-UTC}
+export TZ
 
 # Set environment variable that holds the Internal Docker IP
 INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}')
