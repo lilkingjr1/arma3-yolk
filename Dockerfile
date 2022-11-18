@@ -1,52 +1,49 @@
+#
+# Copyright (c) 2021 Matthew Penner
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
 FROM        --platform=$TARGETOS/$TARGETARCH debian:stable-slim
 
-LABEL       author="David Wolfe (Red-Thirten)" maintainer="rehlmgaming@gmail.com"
+LABEL       author="Matthew Penner" maintainer="matthew@pterodactyl.io"
 
-LABEL       org.opencontainers.image.source="https://github.com/parkervcp/yolks"
+LABEL       org.opencontainers.image.source="https://github.com/pterodactyl/yolks"
 LABEL       org.opencontainers.image.licenses=MIT
 
-## Update base packages and install dependencies
 ENV         DEBIAN_FRONTEND=noninteractive
 
 RUN         dpkg --add-architecture i386 \
-            && apt-get update \
-            && apt-get upgrade -y \
-            && apt-get install -y \
-                curl \
-                tzdata \
-                locales \
-                iproute2 \
-                gettext-base \
-                ca-certificates \
-                libssl-dev \
-                lib32gcc-s1 \
-                libsdl2-2.0-0 \
-                libsdl2-2.0-0:i386 \
-                libstdc++6 \
-                libstdc++6:i386 \
-                lib32stdc++6 \
-                libnss-wrapper \
-                libnss-wrapper:i386 \
-                libtbb2 \
-                libtbb2:i386
+            && apt update \
+            && apt upgrade -y \
+            && apt install -y tar curl gcc g++ lib32gcc-s1 libgcc1 libcurl4-gnutls-dev:i386 libssl1.1:i386 libcurl4:i386 lib32tinfo6 libtinfo6:i386 lib32z1 lib32stdc++6 libncurses5:i386 libcurl3-gnutls:i386 libsdl2-2.0-0:i386 iproute2 gdb libsdl1.2debian libfontconfig1 telnet net-tools netcat tzdata \
+            && useradd -m -d /home/container container
 
-## Configure locale
-RUN         update-locale lang=en_US.UTF-8 \
-            && dpkg-reconfigure --frontend noninteractive locales
+## install rcon
+RUN         cd /tmp/ \
+            && curl -sSL https://github.com/gorcon/rcon-cli/releases/download/v0.10.2/rcon-0.10.2-amd64_linux.tar.gz > rcon.tar.gz \
+            && tar xvf rcon.tar.gz \
+            && mv rcon-0.10.2-amd64_linux/rcon /usr/local/bin/
 
-## Prepare NSS Wrapper for the entrypoint as a workaround for Arma 3 requiring a valid UID
-ENV         NSS_WRAPPER_PASSWD=/tmp/passwd NSS_WRAPPER_GROUP=/tmp/group
-RUN         touch ${NSS_WRAPPER_PASSWD} ${NSS_WRAPPER_GROUP} \
-            && chgrp 0 ${NSS_WRAPPER_PASSWD} ${NSS_WRAPPER_GROUP} \
-            && chmod g+rw ${NSS_WRAPPER_PASSWD} ${NSS_WRAPPER_GROUP}
-ADD         passwd.template /passwd.template
-
-## Setup user and working directory
-RUN         useradd -m -d /home/container -s /bin/bash container
 USER        container
 ENV         USER=container HOME=/home/container
 WORKDIR     /home/container
 
-## Copy over and execute entrypoint.sh
 COPY        ./entrypoint.sh /entrypoint.sh
 CMD         [ "/bin/bash", "/entrypoint.sh" ]
