@@ -29,9 +29,6 @@ NC='\033[0m' # No Color
 #
 # Runs SteamCMD with specified variables and performs error handling.
 function RunSteamCMD { #[Input: int server=0 mod=1 optional_mod=2; int id]
-    ./steamcmd/steamcmd.sh +force_install_dir /home/container +login ${STEAM_USER} ${STEAM_PASS} +app_update ${STEAMCMD_APPID} $( [[ -z ${VALIDATE_SERVER} ]] || printf %s "validate" ) +quit
-    echo -e "\nUPDATE CHECK COMPLETE!\n"
-    exit 0
     # Clear previous SteamCMD log
     if [[ -f "${STEAMCMD_LOG}" ]]; then
         rm -f "${STEAMCMD_LOG:?}"
@@ -192,6 +189,10 @@ if [[ -z ${VALIDATE_SERVER} ]]; then # VALIDATE_SERVER was not in the previous v
     echo -e "\t${CYAN}${EGG_URL}${NC}\n"
     exit 1
 fi
+
+./steamcmd/steamcmd.sh +force_install_dir /home/container +login ${STEAM_USER} ${STEAM_PASS} +app_update ${STEAMCMD_APPID} $( [[ -z ${VALIDATE_SERVER} ]] || printf %s "validate" ) +quit
+echo -e "\nUPDATE CHECK COMPLETE!\n"
+exit 0
 
 # Collect and parse all specified mods
 if [[ -n ${MODIFICATIONS} ]] && [[ ${MODIFICATIONS} != *\; ]]; then # Add manually specified mods to the client-side mods list, while checking for trailing semicolon
