@@ -37,6 +37,6 @@ export INTERNAL_IP
 cd /home/container || exit 1
 
 
-./steamcmd/steamcmd.sh +force_install_dir /home/container +login ${STEAM_USER} ${STEAM_PASS} +app_update ${STEAMCMD_APPID} $( [[ -z ${VALIDATE_SERVER} ]] || printf %s "validate" ) +quit
+./steamcmd/steamcmd_old.sh +force_install_dir /home/container +login ${STEAM_USER} ${STEAM_PASS} +app_update ${STEAMCMD_APPID} $( [[ -z ${VALIDATE_SERVER} ]] || printf %s "validate" ) +quit
 echo -e "\nUPDATE CHECK COMPLETE!\n"
 exit 0
