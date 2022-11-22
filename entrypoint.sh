@@ -38,6 +38,6 @@ export HOME=/home/container
 cd /home/container || exit 1
 
 
-./steamcmd.sh +force_install_dir /mnt/server "+login \"${STEAM_USER}\" \"${STEAM_PASS}\"" +app_update ${STEAMCMD_APPID} validate +quit
+./steamcmd/steamcmd.sh +force_install_dir /mnt/server "+login \"${STEAM_USER}\" \"${STEAM_PASS}\"" +app_update ${STEAMCMD_APPID} validate +quit
 echo -e "\nUPDATE CHECK COMPLETE!\n"
 exit 0
