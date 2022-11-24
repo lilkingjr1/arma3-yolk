@@ -32,10 +32,13 @@ ENV         DEBIAN_FRONTEND noninteractive
 ## add container user
 RUN   useradd -m -d /home/container -s /bin/bash container
 
-RUN         dpkg --add-architecture i386 \
-				&& apt update \
-				&& apt upgrade -y \
-				&& apt install -y --no-install-recommends install ca-certificates curl lib32gcc-s1 libsdl2-2.0-0:i386 git unzip zip tar jq
+## update base packages
+RUN   apt update \
+        &&   apt upgrade -y
+	
+## install dependencies
+RUN   apt install -y ca-certificates curl lib32gcc-s1 libsdl2-2.0-0 git unzip zip tar jq
+
 ## configure locale
 RUN   update-locale lang=en_US.UTF-8 \
         &&   dpkg-reconfigure --frontend noninteractive locales
