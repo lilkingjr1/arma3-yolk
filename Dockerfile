@@ -39,10 +39,6 @@ RUN   apt update \
 ## install dependencies
 RUN   apt install -y ca-certificates curl lib32gcc-s1 libsdl2-2.0-0 git unzip zip tar jq
 
-## configure locale
-RUN   update-locale lang=en_US.UTF-8 \
-        &&   dpkg-reconfigure --frontend noninteractive locales
-
 WORKDIR     /home/container
 
 COPY        ./entrypoint.sh /entrypoint.sh
