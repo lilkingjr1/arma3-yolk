@@ -11,7 +11,7 @@ ENV         DEBIAN_FRONTEND=noninteractive
 RUN         dpkg --add-architecture i386 \
             && apt-get update \
             && apt-get upgrade -y \
-            && apt-get install -y ca-certificates curl lib32gcc-s1 libsdl2-2.0-0 libsdl2-2.0-0:i386 libcurl3:i386 git unzip zip tar jq
+            && apt-get install -y ca-certificates curl lib32gcc-s1 libsdl2-2.0-0 libsdl2-2.0-0:i386 libcurl4:i386 git unzip zip tar jq
 
 ## Setup user and working directory
 RUN         useradd -m -d /home/container -s /bin/bash container
