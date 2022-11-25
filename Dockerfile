@@ -27,9 +27,7 @@ RUN         dpkg --add-architecture i386 \
                 lib32stdc++6 \
                 libnss-wrapper \
                 libtbb2 \
-                libtbb2:i386 \
-            && apt-get install -y \
-                libnss-wrapper:i386
+                libtbb2:i386
 
 ## Configure locale
 RUN         update-locale lang=en_US.UTF-8 \
