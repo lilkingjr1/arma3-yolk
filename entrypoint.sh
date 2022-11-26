@@ -362,7 +362,7 @@ envsubst < /passwd.template > ${NSS_WRAPPER_PASSWD}
 if [[ ${SERVER_BINARY} == *"x64"* ]]; then # Check which libnss-wrapper architecture to run, based off the server binary name
     export LD_PRELOAD=/usr/lib/libnss_wrapper.so
 else
-    export LD_PRELOAD=/usr/lib/i386-linux-gnu/libnss_wrapper.so
+    export LD_PRELOAD=/usr/lib/libnss_wrapper.so
 fi
 
 # Replace Startup Variables
