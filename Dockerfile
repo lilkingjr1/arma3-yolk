@@ -1,4 +1,4 @@
-FROM        --platform=$TARGETOS/$TARGETARCH ubuntu:20.04
+FROM        --platform=$TARGETOS/$TARGETARCH debian:buster-slim
 
 LABEL       author="David Wolfe (Red-Thirten)" maintainer="rehlmgaming@gmail.com"
 
