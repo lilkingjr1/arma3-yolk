@@ -19,7 +19,7 @@ RUN         dpkg --add-architecture i386 \
                 ca-certificates \
                 libcurl4:i386 \
                 libssl-dev \
-                lib32gcc-s1 \
+                lib32gcc1 \
                 libsdl2-2.0-0 \
                 libsdl2-2.0-0:i386 \
                 libstdc++6 \
