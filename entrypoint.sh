@@ -96,6 +96,7 @@ function RunSteamCMD { #[Input: int server=0 mod=1 optional_mod=2; int id]
         elif [[ $steamcmdExitCode != 0 ]]; then # Unknown fatal error
             echo -e "\n${RED}[UPDATE]: SteamCMD has crashed for an unknown reason!${NC} (Exit code: ${CYAN}${steamcmdExitCode}${NC})"
             echo -e "\t${YELLOW}(Please contact your administrator/host for support)${NC}\n"
+            cp -r /tmp/dumps /home/container/dumps
             exit $steamcmdExitCode
         else # Success!
             if [[ $1 == 0 ]]; then # Server
