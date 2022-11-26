@@ -1,4 +1,4 @@
-FROM        --platform=$TARGETOS/$TARGETARCH debian:buster-slim
+FROM        --platform=$TARGETOS/$TARGETARCH ubuntu:20.04
 
 LABEL       author="David Wolfe (Red-Thirten)" maintainer="rehlmgaming@gmail.com"
 
@@ -19,13 +19,13 @@ RUN         dpkg --add-architecture i386 \
                 ca-certificates \
                 libcurl4:i386 \
                 libssl-dev \
-                lib32gcc1 \
+                lib32gcc-s1 \
                 libsdl2-2.0-0 \
                 libsdl2-2.0-0:i386 \
                 libstdc++6 \
                 libstdc++6:i386 \
                 lib32stdc++6 \
-                libnss-wrapper \
+                libnss-wrapper:i386 \
                 libtbb2 \
                 libtbb2:i386
 
