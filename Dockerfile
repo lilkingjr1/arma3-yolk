@@ -1,4 +1,4 @@
-FROM        --platform=$TARGETOS/$TARGETARCH ubuntu:20.04
+FROM        --platform=$TARGETOS/$TARGETARCH debian:stable-slim
 
 LABEL       author="David Wolfe (Red-Thirten)" maintainer="rehlmgaming@gmail.com"
 
@@ -17,7 +17,7 @@ RUN         dpkg --add-architecture i386 \
                 iproute2 \
                 gettext-base \
                 ca-certificates \
-                libcurl4:i386 \
+                numactl \
                 libssl-dev \
                 lib32gcc-s1 \
                 libsdl2-2.0-0 \
@@ -25,6 +25,7 @@ RUN         dpkg --add-architecture i386 \
                 libstdc++6 \
                 libstdc++6:i386 \
                 lib32stdc++6 \
+                libnss-wrapper \
                 libnss-wrapper:i386 \
                 libtbb2 \
                 libtbb2:i386
@@ -34,8 +35,6 @@ RUN         update-locale lang=en_US.UTF-8 \
             && dpkg-reconfigure --frontend noninteractive locales
 
 ## Prepare NSS Wrapper for the entrypoint as a workaround for Arma 3 requiring a valid UID
-RUN         mv /usr/lib/libnss_wrapper.so /usr/lib/libnss_wrapper_32.so \
-            && apt-get install -y libnss-wrapper
 ENV         NSS_WRAPPER_PASSWD=/tmp/passwd NSS_WRAPPER_GROUP=/tmp/group
 RUN         touch ${NSS_WRAPPER_PASSWD} ${NSS_WRAPPER_GROUP} \
             && chgrp 0 ${NSS_WRAPPER_PASSWD} ${NSS_WRAPPER_GROUP} \
