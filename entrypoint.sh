@@ -73,7 +73,8 @@ function RunSteamCMD { #[Input: int server=0 mod=1 optional_mod=2; int id]
                 echo -e "\n${RED}[UPDATE]: Cannot login to Steam - Improperly configured account and/or credentials"
                 echo -e "\t${YELLOW}Please contact your administrator/host and give them the following message:${NC}"
                 echo -e "\t${CYAN}Your Egg, or your client's server, is not configured with valid Steam credentials.${NC}"
-                echo -e "\t${CYAN}Either the username/password is wrong, or Steam Guard is not properly configured\n\t${CYAN}according to this egg's documentation/README.${NC}\n"
+                echo -e "\t${CYAN}Either the username/password is wrong, or Steam Guard is not properly configured"
+                echo -e "\t${CYAN}according to this egg's documentation/README.${NC}\n"
                 exit 1
             elif [[ -n $(grep -i "Download item" "${STEAMCMD_LOG}") ]]; then # Steam account does not own base game for mod downloads, or unknown
                 echo -e "\n${RED}[UPDATE]: Cannot download mod - Download failed"
@@ -87,7 +88,8 @@ function RunSteamCMD { #[Input: int server=0 mod=1 optional_mod=2; int id]
                 exit 1
             elif [[ -n $(grep -i "0x606" "${STEAMCMD_LOG}") ]]; then # Disk write failure
                 echo -e "\n${RED}[UPDATE]: Unable to complete download - Disk write failure"
-                echo -e "\t${YELLOW}This is normally caused by directory permissions issues,\n\t${YELLOW}but could be a more serious hardware issue.${NC}"
+                echo -e "\t${YELLOW}This is normally caused by directory permissions issues,"
+                echo -e "\t${YELLOW}but could be a more serious hardware issue.${NC}"
                 echo -e "\t${YELLOW}(Please contact your administrator/host if this issue persists)${NC}\n"
                 exit 1
             else # Unknown caught error
