@@ -226,7 +226,7 @@ allMods=$(echo $allMods | sed -e 's/;/ /g') # Convert from string to array
 # Update everything (server and mods), if specified
 if [[ ${UPDATE_SERVER} == 1 ]]; then
     echo -e "\n${GREEN}[STARTUP]: ${CYAN}Starting checks for all updates...${NC}"
-    echo -e "(It is okay to ignore any \"SDL\" and \"thread priority\" errors during this process)\n"
+    echo -e "(It is okay to ignore any \"SDL\", \"steamservice\", and \"thread priority\" errors during this process)\n"
 
     ## Update game server
     echo -e "${GREEN}[UPDATE]:${NC} Checking for game server updates with App ID: ${CYAN}${STEAMCMD_APPID}${NC}..."
