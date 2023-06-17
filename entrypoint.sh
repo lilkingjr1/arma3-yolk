@@ -54,7 +54,8 @@ function RunSteamCMD { #[Input: int server=0 mod=1 optional_mod=2; int id]
 
         # Error checking for SteamCMD
         steamcmdExitCode=${PIPESTATUS[0]}
-        if [[ -n $(grep -i "error\|failed" "${STEAMCMD_LOG}" | grep -iv "setlocal\|SDL\|thread") ]]; then # Catch errors (ignore setlocale, SDL, and thread priority warnings)
+        loggedErrors=$(grep -i "error\|failed" "${STEAMCMD_LOG}" | grep -iv "setlocal\|SDL\|thread")
+        if [[ -n ${loggedErrors} ]]; then # Catch errors (ignore setlocale, SDL, and thread priority warnings)
             # Soft errors
             if [[ -n $(grep -i "Timeout downloading item" "${STEAMCMD_LOG}") ]]; then # Mod download timeout
                 echo -e "\n${YELLOW}[UPDATE]: ${NC}Timeout downloading Steam Workshop mod: \"${CYAN}${modName}${NC}\" (${CYAN}${2}${NC})"
@@ -91,7 +92,8 @@ function RunSteamCMD { #[Input: int server=0 mod=1 optional_mod=2; int id]
                 exit 1
             else # Unknown caught error
                 echo -e "\n${RED}[UPDATE]: ${YELLOW}An unknown error has occurred with SteamCMD. ${CYAN}Skipping download...${NC}"
-                echo -e "\t(Please contact your administrator/host if this issue persists)"
+                echo -e "SteamCMD Errors:\n${loggedErrors}"
+                echo -e "\t${YELLOW}(Please contact your administrator/host if this issue persists)${NC}\n"
                 break
             fi
         elif [[ $steamcmdExitCode != 0 ]]; then # Unknown fatal error
